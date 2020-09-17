@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-readonly FIXTURES="${BATS_TEST_DIRNAME}/AnalysisRun"
+readonly FIXTURES="${BATS_TEST_DIRNAME}/analysisrun"
 
 @test "valid AnalysisRun" {
   run kubeval --additional-schema-locations file://. "${FIXTURES}/valid.yaml"

@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-readonly FIXTURES="${BATS_TEST_DIRNAME}/ClusterAnalysisTemplate"
+readonly FIXTURES="${BATS_TEST_DIRNAME}/clusteranalysistemplate"
 
 @test "valid ClusterAnalysisTemplate" {
   run kubeval --additional-schema-locations file://. "${FIXTURES}/valid.yaml"
