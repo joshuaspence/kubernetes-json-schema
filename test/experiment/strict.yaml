@@ -1,0 +1,12 @@
+---
+apiVersion: 'argoproj.io/v1alpha1'
+kind: 'Experiment'
+metadata:
+  name: 'test'
+  namespace: 'test'
+spec:
+  invalid-key: true
+  templates:
+    - name: 'name'
+      selector: {}
+      template: {}
