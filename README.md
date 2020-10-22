@@ -5,3 +5,7 @@ A repo to host custom resource definitions to be use with `kubeval`. Fixes this 
 ```bash
 kubeval --additional-schema-locations https://raw.githubusercontent.com/joshuaspence/kubernetes-json-schema/master -d .
 ```
+
+## Requirements
+
+You need to install `yq` and `sponge` to run the script `build.sh`
