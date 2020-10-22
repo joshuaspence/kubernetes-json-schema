@@ -23,12 +23,19 @@ function crd_to_json_schema() {
 
     case "${api_version}" in
       v1beta1)
-        crd_version=$(yq read --doc "${document}" "${input}" spec.version)
-        yq read --doc "${document}" --prettyPrint --tojson "${input}" spec.validation.openAPIV3Schema | write_schema "${crd_kind}-${crd_group}-${crd_version}.json"
+        crd_version=$(yq read --doc "${document}" "${input}" 'spec.version')
+        if [ -z ${crd_version} ]
+        then
+          for crd_version in $(yq read --doc "${document}" "${input}" 'spec.versions.*.name'); do
+            yq read --doc "${document}" --prettyPrint --tojson "${input}" "spec.versions.(name==${crd_version}).schema.openAPIV3Schema" | write_schema "${crd_kind}-${crd_group}-${crd_version}.json"
+          done
+        else
+          yq read --doc "${document}" --prettyPrint --tojson "${input}" spec.validation.openAPIV3Schema | write_schema "${crd_kind}-${crd_group}-${crd_version}.json"
+        fi
         ;;
 
       v1)
-        for crd_version in $(yq read --doc "${document}" "${input}" spec.versions.*.name); do
+        for crd_version in $(yq read --doc "${document}" "${input}" 'spec.versions.*.name'); do
           yq read --doc "${document}" --prettyPrint --tojson "${input}" "spec.versions.(name==${crd_version}).schema.openAPIV3Schema" | write_schema "${crd_kind}-${crd_group}-${crd_version}.json"
         done
         ;;
@@ -50,4 +57,5 @@ crd_to_json_schema argo-rollouts https://raw.githubusercontent.com/argoproj/argo
 crd_to_json_schema cert-manager https://raw.githubusercontent.com/jetstack/cert-manager/master/deploy/crds/crd-clusterissuers.yaml
 crd_to_json_schema helm-operator https://raw.githubusercontent.com/fluxcd/helm-operator/master/deploy/crds.yaml
 crd_to_json_schema prometheus-operator https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/master/example/prometheus-operator-crd/monitoring.coreos.com_{alertmanagers,podmonitors,probes,prometheuses,prometheusrules,servicemonitors,thanosrulers}.yaml
-
+crd_to_json_schema istio-operator https://raw.githubusercontent.com/istio/istio/master/manifests/charts/base/crds/crd-operator.yaml
+crd_to_json_schema istio https://raw.githubusercontent.com/istio/istio/master/manifests/charts/base/crds/crd-all.gen.yaml
