@@ -15,7 +15,7 @@ jobs:
       - uses: 'actions/checkout@v2'
 
       # TODO: Lint `*.bats`
-      - uses: 'ludeeus/action-shellcheck@0.5.0'
+      - uses: 'ludeeus/action-shellcheck@1.0.0'
   yamllint:
     runs-on: 'ubuntu-latest'
     steps:
