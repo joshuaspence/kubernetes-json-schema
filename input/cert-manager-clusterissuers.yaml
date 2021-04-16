@@ -17,6 +17,8 @@ spec:
     listKind: ClusterIssuerList
     plural: clusterissuers
     singular: clusterissuer
+    categories:
+      - cert-manager
   scope: Cluster
   conversion:
     # a Webhook strategy instruct API server to call an external webhook for any conversion between custom resources.
@@ -75,16 +77,18 @@ spec:
                     email:
                       description: Email is the email address to be associated with the ACME account. This field is optional, but it is strongly recommended to be set. It will be used to contact you in case of issues with your account or certificates, including expiry notification emails. This field may be updated after the account is initially registered.
                       type: string
+                    enableDurationFeature:
+                      description: Enables requesting a Not After date on certificates that matches the duration of the certificate. This is not supported by all ACME servers like Let's Encrypt. If set to true when the ACME server does not support it it will create an error on the Order. Defaults to false.
+                      type: boolean
                     externalAccountBinding:
                       description: ExternalAccountBinding is a reference to a CA external account of the ACME server. If set, upon registration cert-manager will attempt to associate the given external account credentials with the registered ACME account.
                       type: object
                       required:
-                        - keyAlgorithm
                         - keyID
                         - keySecretRef
                       properties:
                         keyAlgorithm:
-                          description: keyAlgorithm is the MAC key algorithm that the key is used for. Valid values are "HS256", "HS384" and "HS512".
+                          description: 'Deprecated: keyAlgorithm field exists for historical compatibility reasons and should not be used. The algorithm is now hardcoded to HS256 in golang/x/crypto/acme.'
                           type: string
                           enum:
                             - HS256
@@ -857,6 +861,11 @@ spec:
                       type: array
                       items:
                         type: string
+                    ocspServers:
+                      description: The OCSP server list is an X.509 v3 extension that defines a list of URLs of OCSP responders. The OCSP responders can be queried for the revocation status of an issued certificate. If not set, the certificate will be issued with no OCSP servers set. For example, an OCSP server URL could be "http://ocsp.int-x3.letsencrypt.org".
+                      type: array
+                      items:
+                        type: string
                     secretName:
                       description: SecretName is the name of the secret used to sign Certificates issued by this Issuer.
                       type: string
@@ -1041,18 +1050,22 @@ spec:
                       message:
                         description: Message is a human readable description of the details of the last transition, complementing reason.
                         type: string
+                      observedGeneration:
+                        description: If set, this represents the .metadata.generation that the condition was set based upon. For instance, if .metadata.generation is currently 12, but the .status.condition[x].observedGeneration is 9, the condition is out of date with respect to the current state of the Issuer.
+                        type: integer
+                        format: int64
                       reason:
                         description: Reason is a brief machine readable explanation for the condition's last transition.
                         type: string
                       status:
-                        description: Status of the condition, one of ('True', 'False', 'Unknown').
+                        description: Status of the condition, one of (`True`, `False`, `Unknown`).
                         type: string
                         enum:
                           - "True"
                           - "False"
                           - Unknown
                       type:
-                        description: Type of the condition, known values are ('Ready').
+                        description: Type of the condition, known values are (`Ready`).
                         type: string
       served: true
       storage: false
@@ -1101,16 +1114,18 @@ spec:
                     email:
                       description: Email is the email address to be associated with the ACME account. This field is optional, but it is strongly recommended to be set. It will be used to contact you in case of issues with your account or certificates, including expiry notification emails. This field may be updated after the account is initially registered.
                       type: string
+                    enableDurationFeature:
+                      description: Enables requesting a Not After date on certificates that matches the duration of the certificate. This is not supported by all ACME servers like Let's Encrypt. If set to true when the ACME server does not support it it will create an error on the Order. Defaults to false.
+                      type: boolean
                     externalAccountBinding:
                       description: ExternalAccountBinding is a reference to a CA external account of the ACME server. If set, upon registration cert-manager will attempt to associate the given external account credentials with the registered ACME account.
                       type: object
                       required:
-                        - keyAlgorithm
                         - keyID
                         - keySecretRef
                       properties:
                         keyAlgorithm:
-                          description: keyAlgorithm is the MAC key algorithm that the key is used for. Valid values are "HS256", "HS384" and "HS512".
+                          description: 'Deprecated: keyAlgorithm field exists for historical compatibility reasons and should not be used. The algorithm is now hardcoded to HS256 in golang/x/crypto/acme.'
                           type: string
                           enum:
                             - HS256
@@ -1883,6 +1898,11 @@ spec:
                       type: array
                       items:
                         type: string
+                    ocspServers:
+                      description: The OCSP server list is an X.509 v3 extension that defines a list of URLs of OCSP responders. The OCSP responders can be queried for the revocation status of an issued certificate. If not set, the certificate will be issued with no OCSP servers set. For example, an OCSP server URL could be "http://ocsp.int-x3.letsencrypt.org".
+                      type: array
+                      items:
+                        type: string
                     secretName:
                       description: SecretName is the name of the secret used to sign Certificates issued by this Issuer.
                       type: string
@@ -2067,18 +2087,22 @@ spec:
                       message:
                         description: Message is a human readable description of the details of the last transition, complementing reason.
                         type: string
+                      observedGeneration:
+                        description: If set, this represents the .metadata.generation that the condition was set based upon. For instance, if .metadata.generation is currently 12, but the .status.condition[x].observedGeneration is 9, the condition is out of date with respect to the current state of the Issuer.
+                        type: integer
+                        format: int64
                       reason:
                         description: Reason is a brief machine readable explanation for the condition's last transition.
                         type: string
                       status:
-                        description: Status of the condition, one of ('True', 'False', 'Unknown').
+                        description: Status of the condition, one of (`True`, `False`, `Unknown`).
                         type: string
                         enum:
                           - "True"
                           - "False"
                           - Unknown
                       type:
-                        description: Type of the condition, known values are ('Ready').
+                        description: Type of the condition, known values are (`Ready`).
                         type: string
       served: true
       storage: false
@@ -2129,16 +2153,18 @@ spec:
                     email:
                       description: Email is the email address to be associated with the ACME account. This field is optional, but it is strongly recommended to be set. It will be used to contact you in case of issues with your account or certificates, including expiry notification emails. This field may be updated after the account is initially registered.
                       type: string
+                    enableDurationFeature:
+                      description: Enables requesting a Not After date on certificates that matches the duration of the certificate. This is not supported by all ACME servers like Let's Encrypt. If set to true when the ACME server does not support it it will create an error on the Order. Defaults to false.
+                      type: boolean
                     externalAccountBinding:
                       description: ExternalAccountBinding is a reference to a CA external account of the ACME server. If set, upon registration cert-manager will attempt to associate the given external account credentials with the registered ACME account.
                       type: object
                       required:
-                        - keyAlgorithm
                         - keyID
                         - keySecretRef
                       properties:
                         keyAlgorithm:
-                          description: keyAlgorithm is the MAC key algorithm that the key is used for. Valid values are "HS256", "HS384" and "HS512".
+                          description: 'Deprecated: keyAlgorithm field exists for historical compatibility reasons and should not be used. The algorithm is now hardcoded to HS256 in golang/x/crypto/acme.'
                           type: string
                           enum:
                             - HS256
@@ -2911,6 +2937,11 @@ spec:
                       type: array
                       items:
                         type: string
+                    ocspServers:
+                      description: The OCSP server list is an X.509 v3 extension that defines a list of URLs of OCSP responders. The OCSP responders can be queried for the revocation status of an issued certificate. If not set, the certificate will be issued with no OCSP servers set. For example, an OCSP server URL could be "http://ocsp.int-x3.letsencrypt.org".
+                      type: array
+                      items:
+                        type: string
                     secretName:
                       description: SecretName is the name of the secret used to sign Certificates issued by this Issuer.
                       type: string
@@ -3095,18 +3126,22 @@ spec:
                       message:
                         description: Message is a human readable description of the details of the last transition, complementing reason.
                         type: string
+                      observedGeneration:
+                        description: If set, this represents the .metadata.generation that the condition was set based upon. For instance, if .metadata.generation is currently 12, but the .status.condition[x].observedGeneration is 9, the condition is out of date with respect to the current state of the Issuer.
+                        type: integer
+                        format: int64
                       reason:
                         description: Reason is a brief machine readable explanation for the condition's last transition.
                         type: string
                       status:
-                        description: Status of the condition, one of ('True', 'False', 'Unknown').
+                        description: Status of the condition, one of (`True`, `False`, `Unknown`).
                         type: string
                         enum:
                           - "True"
                           - "False"
                           - Unknown
                       type:
-                        description: Type of the condition, known values are ('Ready').
+                        description: Type of the condition, known values are (`Ready`).
                         type: string
       served: true
       storage: false
@@ -3157,16 +3192,18 @@ spec:
                     email:
                       description: Email is the email address to be associated with the ACME account. This field is optional, but it is strongly recommended to be set. It will be used to contact you in case of issues with your account or certificates, including expiry notification emails. This field may be updated after the account is initially registered.
                       type: string
+                    enableDurationFeature:
+                      description: Enables requesting a Not After date on certificates that matches the duration of the certificate. This is not supported by all ACME servers like Let's Encrypt. If set to true when the ACME server does not support it it will create an error on the Order. Defaults to false.
+                      type: boolean
                     externalAccountBinding:
                       description: ExternalAccountBinding is a reference to a CA external account of the ACME server. If set, upon registration cert-manager will attempt to associate the given external account credentials with the registered ACME account.
                       type: object
                       required:
-                        - keyAlgorithm
                         - keyID
                         - keySecretRef
                       properties:
                         keyAlgorithm:
-                          description: keyAlgorithm is the MAC key algorithm that the key is used for. Valid values are "HS256", "HS384" and "HS512".
+                          description: 'Deprecated: keyAlgorithm field exists for historical compatibility reasons and should not be used. The algorithm is now hardcoded to HS256 in golang/x/crypto/acme.'
                           type: string
                           enum:
                             - HS256
@@ -3939,6 +3976,11 @@ spec:
                       type: array
                       items:
                         type: string
+                    ocspServers:
+                      description: The OCSP server list is an X.509 v3 extension that defines a list of URLs of OCSP responders. The OCSP responders can be queried for the revocation status of an issued certificate. If not set, the certificate will be issued with no OCSP servers set. For example, an OCSP server URL could be "http://ocsp.int-x3.letsencrypt.org".
+                      type: array
+                      items:
+                        type: string
                     secretName:
                       description: SecretName is the name of the secret used to sign Certificates issued by this Issuer.
                       type: string
@@ -4123,18 +4165,22 @@ spec:
                       message:
                         description: Message is a human readable description of the details of the last transition, complementing reason.
                         type: string
+                      observedGeneration:
+                        description: If set, this represents the .metadata.generation that the condition was set based upon. For instance, if .metadata.generation is currently 12, but the .status.condition[x].observedGeneration is 9, the condition is out of date with respect to the current state of the Issuer.
+                        type: integer
+                        format: int64
                       reason:
                         description: Reason is a brief machine readable explanation for the condition's last transition.
                         type: string
                       status:
-                        description: Status of the condition, one of ('True', 'False', 'Unknown').
+                        description: Status of the condition, one of (`True`, `False`, `Unknown`).
                         type: string
                         enum:
                           - "True"
                           - "False"
                           - Unknown
                       type:
-                        description: Type of the condition, known values are ('Ready').
+                        description: Type of the condition, known values are (`Ready`).
                         type: string
       served: true
       storage: true
