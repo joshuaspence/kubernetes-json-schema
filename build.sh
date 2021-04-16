@@ -4,6 +4,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+
 function crd_to_json_schema() {
   local api_version crd_group crd_kind crd_version document input kind
 
@@ -11,11 +12,11 @@ function crd_to_json_schema() {
   input="input/${1}.yaml"
   curl --silent --show-error "${@:2}" > "${input}"
 
-  for document in $(seq 0 $(($(yq read --collect --doc '*' --length "${input}") - 1))); do
-    api_version=$(yq read --doc "${document}" "${input}" apiVersion | cut --delimiter=/ --fields=2)
-    kind=$(yq read --doc "${document}" "${input}" kind)
-    crd_kind=$(yq read --doc "${document}" "${input}" spec.names.kind | tr '[:upper:]' '[:lower:]')
-    crd_group=$(yq read --doc "${document}" "${input}" spec.group | cut --delimiter=. --fields=1)
+  for document in $(seq 0 $(($(yq eval-all '[.] | length' "${input}") - 1))); do
+    api_version=$(yq eval 'select(documentIndex == '"${document}"') | .apiVersion' "${input}" | cut -d / -f 2)
+    kind=$(yq eval 'select(documentIndex == '"${document}"') | .kind' "${input}")
+    crd_kind=$(yq eval 'select(documentIndex == '"${document}"') | .spec.names.kind' "${input}" | tr '[:upper:]' '[:lower:]')
+    crd_group=$(yq eval 'select(documentIndex == '"${document}"') | .spec.group' "${input}" | cut -d . -f 1)
 
     if [[ "${kind}" != CustomResourceDefinition ]]; then
       continue
@@ -23,13 +24,14 @@ function crd_to_json_schema() {
 
     case "${api_version}" in
       v1beta1)
-        crd_version=$(yq read --doc "${document}" "${input}" spec.version)
-        yq read --doc "${document}" --prettyPrint --tojson "${input}" spec.validation.openAPIV3Schema | write_schema "${crd_kind}-${crd_group}-${crd_version}.json"
+        crd_version=$(yq eval 'select(documentIndex == '"${document}"') | .spec.version' "${input}")
+        yq eval --prettyPrint --tojson 'select(documentIndex == '"${document}"') | .spec.validation.openAPIV3Schema' "${input}" | write_schema "${crd_kind}-${crd_group}-${crd_version}.json"
         ;;
 
       v1)
-        for crd_version in $(yq read --doc "${document}" "${input}" spec.versions.*.name); do
-          yq read --doc "${document}" --prettyPrint --tojson "${input}" "spec.versions.(name==${crd_version}).schema.openAPIV3Schema" | write_schema "${crd_kind}-${crd_group}-${crd_version}.json"
+
+        for crd_version in $(yq eval 'select(documentIndex == '"${document}"') | .spec.versions.[].name' "${input}"); do
+          yq eval --prettyPrint --tojson 'select(documentIndex == '"${document}"') | .spec.versions.[] | select(.name == "'${crd_version}'") | .schema.openAPIV3Schema' "${input}" | write_schema "${crd_kind}-${crd_group}-${crd_version}.json"
         done
         ;;
 
